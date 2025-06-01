@@ -5,12 +5,10 @@ import 'package:logarte/src/console/logarte_theme_wrapper.dart';
 
 class LogarteDashboardScreen extends StatefulWidget {
   final Logarte instance;
-  final bool showBackButton;
 
   const LogarteDashboardScreen(
     this.instance, {
     Key? key,
-    this.showBackButton = false,
   }) : super(key: key);
 
   @override
@@ -19,11 +17,28 @@ class LogarteDashboardScreen extends StatefulWidget {
 
 class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
   late final TextEditingController _controller;
+  late int tabLength;
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
+    tabLength = widget.instance.customTab != null ? 6 : 5;
+    if (widget.instance.disableAllLogs) {
+      tabLength--;
+    }
+    if (widget.instance.disablePlainLogs) {
+      tabLength--;
+    }
+    if (widget.instance.disableNetworkLogs) {
+      tabLength--;
+    }
+    if (widget.instance.disableDatabaseLogs) {
+      tabLength--;
+    }
+    if (widget.instance.disableNavigationLogs) {
+      tabLength--;
+    }
   }
 
   @override
@@ -36,7 +51,7 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
   Widget build(BuildContext context) {
     return LogarteThemeWrapper(
       child: DefaultTabController(
-        length: widget.instance.customTab != null ? 6 : 5,
+        length: tabLength,
         child: Scaffold(
           body: NestedScrollView(
             headerSliverBuilder: (context, innerBoxIsScrolled) {
@@ -44,7 +59,9 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
                 SliverAppBar(
                   floating: true,
                   snap: true,
-                  leading: widget.showBackButton ? const BackButton() : null,
+                  leading: widget.instance.showBackButton
+                      ? const BackButton()
+                      : null,
                   automaticallyImplyLeading: false,
                   title: TextField(
                     controller: _controller,
@@ -64,30 +81,35 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
                     labelPadding: const EdgeInsets.symmetric(horizontal: 12.0),
                     indicatorSize: TabBarIndicatorSize.tab,
                     tabs: [
-                      Tab(
-                        icon: const Icon(Icons.list_alt_rounded),
-                        text: 'All (${widget.instance.logs.value.length})',
-                      ),
-                      Tab(
-                        icon: const Icon(Icons.bug_report_rounded),
-                        text:
-                            'Logging (${widget.instance.logs.value.whereType<PlainLogarteEntry>().length})',
-                      ),
-                      Tab(
-                        icon: const Icon(Icons.public),
-                        text:
-                            'Network (${widget.instance.logs.value.whereType<NetworkLogarteEntry>().length})',
-                      ),
-                      Tab(
-                        icon: const Icon(Icons.save_as_rounded),
-                        text:
-                            'Database (${widget.instance.logs.value.whereType<DatabaseLogarteEntry>().length})',
-                      ),
-                      Tab(
-                        icon: const Icon(Icons.navigation_rounded),
-                        text:
-                            'Navigation (${widget.instance.logs.value.whereType<NavigatorLogarteEntry>().length})',
-                      ),
+                      if (!widget.instance.disableAllLogs)
+                        Tab(
+                          icon: const Icon(Icons.list_alt_rounded),
+                          text: 'All (${widget.instance.logs.value.length})',
+                        ),
+                      if (!widget.instance.disablePlainLogs)
+                        Tab(
+                          icon: const Icon(Icons.bug_report_rounded),
+                          text:
+                              'Logging (${widget.instance.logs.value.whereType<PlainLogarteEntry>().length})',
+                        ),
+                      if (!widget.instance.disableNetworkLogs)
+                        Tab(
+                          icon: const Icon(Icons.public),
+                          text:
+                              'Network (${widget.instance.logs.value.whereType<NetworkLogarteEntry>().length})',
+                        ),
+                      if (!widget.instance.disableDatabaseLogs)
+                        Tab(
+                          icon: const Icon(Icons.save_as_rounded),
+                          text:
+                              'Database (${widget.instance.logs.value.whereType<DatabaseLogarteEntry>().length})',
+                        ),
+                      if (!widget.instance.disableNavigationLogs)
+                        Tab(
+                          icon: const Icon(Icons.navigation_rounded),
+                          text:
+                              'Navigation (${widget.instance.logs.value.whereType<NavigatorLogarteEntry>().length})',
+                        ),
                       if (widget.instance.customTab != null)
                         const Tab(
                           icon: Icon(Icons.extension_rounded),
@@ -109,26 +131,31 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
 
                     return TabBarView(
                       children: [
-                        _List<LogarteEntry>(
-                          instance: widget.instance,
-                          search: search,
-                        ),
-                        _List<PlainLogarteEntry>(
-                          instance: widget.instance,
-                          search: search,
-                        ),
-                        _List<NetworkLogarteEntry>(
-                          instance: widget.instance,
-                          search: search,
-                        ),
-                        _List<DatabaseLogarteEntry>(
-                          instance: widget.instance,
-                          search: search,
-                        ),
-                        _List<NavigatorLogarteEntry>(
-                          instance: widget.instance,
-                          search: search,
-                        ),
+                        if (!widget.instance.disableAllLogs)
+                          _List<LogarteEntry>(
+                            instance: widget.instance,
+                            search: search,
+                          ),
+                        if (!widget.instance.disablePlainLogs)
+                          _List<PlainLogarteEntry>(
+                            instance: widget.instance,
+                            search: search,
+                          ),
+                        if (!widget.instance.disableNetworkLogs)
+                          _List<NetworkLogarteEntry>(
+                            instance: widget.instance,
+                            search: search,
+                          ),
+                        if (!widget.instance.disableDatabaseLogs)
+                          _List<DatabaseLogarteEntry>(
+                            instance: widget.instance,
+                            search: search,
+                          ),
+                        if (!widget.instance.disableNavigationLogs)
+                          _List<NavigatorLogarteEntry>(
+                            instance: widget.instance,
+                            search: search,
+                          ),
                         if (widget.instance.customTab != null)
                           widget.instance.customTab!,
                       ],
