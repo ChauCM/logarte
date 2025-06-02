@@ -60,7 +60,11 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
                   floating: true,
                   snap: true,
                   leading: widget.instance.showBackButton
-                      ? const BackButton()
+                      ? BackButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        )
                       : null,
                   automaticallyImplyLeading: false,
                   title: TextField(

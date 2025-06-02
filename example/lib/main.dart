@@ -111,8 +111,10 @@ class HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            LogarteMagicalTap(
-              logarte: logarte,
+            GestureDetector(
+              onLongPress: () {
+                logarte.openConsole(context);
+              },
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.blueGrey.shade50,
@@ -120,9 +122,9 @@ class HomePageState extends State<HomePage> {
                 ),
                 child: const ListTile(
                   leading: Icon(Icons.touch_app_rounded),
-                  title: Text('LogarteMagicalTap'),
+                  title: Text('Logarte'),
                   subtitle: Text(
-                    'Tap 10 times to attach the magical button.',
+                    'Long press to open the console.',
                   ),
                 ),
               ),
