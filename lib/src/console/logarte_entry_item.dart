@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logarte/logarte.dart';
 import 'package:logarte/src/console/network_log_entry_details_screen.dart';
+import 'package:logarte/src/console/notification_log_entry_details_screen.dart';
 import 'package:logarte/src/extensions/entry_extensions.dart';
-import 'package:logarte/src/extensions/route_extensions.dart';
 import 'package:logarte/src/extensions/string_extensions.dart';
 import 'package:logarte/src/models/navigation_action.dart';
 
@@ -34,6 +34,11 @@ class LogarteEntryItem extends StatelessWidget {
     } else if (entry is NavigatorLogarteEntry) {
       return _NavigationItem(
         entry: entry as NavigatorLogarteEntry,
+      );
+    } else if (entry is NotificationLogarteEntry) {
+      return _NotificationItem(
+        entry: entry as NotificationLogarteEntry,
+        instance: instance,
       );
     } else {
       return const FlutterLogo();
@@ -117,11 +122,11 @@ class _NavigationItem extends StatelessWidget {
           ),
           const SizedBox(width: 8.0),
           _LuxuryText(
-            text: entry.previousRoute != null
+            text: entry.previousRouteName != null
                 ? entry.action == NavigationAction.pop
-                    ? '*$action* from *"${entry.route.routeName}"* to *"${entry.previousRoute.routeName}"*'
-                    : '*$action* to *"${entry.route.routeName}"*'
-                : '*$action* to *"${entry.route.routeName}"*',
+                    ? '*$action* from *"${entry.routeName}"* to *"${entry.previousRouteName}"*'
+                    : '*$action* to *"${entry.routeName}"*'
+                : '*$action* to *"${entry.routeName}"*',
           ),
         ],
       ),
@@ -273,6 +278,96 @@ class _DatabaseItem extends StatelessWidget {
             color: Colors.grey,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _NotificationItem extends StatelessWidget {
+  final NotificationLogarteEntry entry;
+  final Logarte instance;
+
+  const _NotificationItem({
+    Key? key,
+    required this.entry,
+    required this.instance,
+  }) : super(key: key);
+
+  Color get _iconColor {
+    switch (entry.eventType) {
+      case NotificationEventType.received:
+        return Colors.green;
+      case NotificationEventType.tapped:
+        return Colors.blue;
+      case NotificationEventType.subscribed:
+      case NotificationEventType.unsubscribed:
+        return Colors.orange;
+    }
+  }
+
+  IconData get _iconData {
+    switch (entry.eventType) {
+      case NotificationEventType.received:
+        return Icons.notifications_active_rounded;
+      case NotificationEventType.tapped:
+        return Icons.touch_app_rounded;
+      case NotificationEventType.subscribed:
+        return Icons.notifications_rounded;
+      case NotificationEventType.unsubscribed:
+        return Icons.notifications_off_rounded;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final label = entry.title ?? entry.topic ?? entry.eventType.name;
+
+    return ListTile(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) {
+              return NotificationLogEntryDetailsScreen(
+                entry,
+                instance: instance,
+              );
+            },
+            settings:
+                const RouteSettings(name: '/logarte_notification_details'),
+          ),
+        );
+      },
+      title: Row(
+        children: [
+          Icon(
+            _iconData,
+            color: _iconColor,
+            size: 20.0,
+          ),
+          const SizedBox(width: 8.0),
+          Expanded(
+            child: Text(
+              '[${entry.eventType.name}] $label',
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+              style: const TextStyle(fontSize: 14.0),
+            ),
+          ),
+        ],
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 2.0),
+        child: Text(
+          '${entry.timeFormatted}${entry.source != null ? ' • ${entry.source}' : ''}',
+          style: const TextStyle(
+            fontSize: 12.0,
+            color: Colors.grey,
+          ),
+        ),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right,
+        color: Colors.grey,
       ),
     );
   }

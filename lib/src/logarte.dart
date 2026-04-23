@@ -8,6 +8,7 @@ import 'package:logarte/src/extensions/object_extensions.dart';
 import 'package:logarte/src/extensions/route_extensions.dart';
 import 'package:logarte/src/models/logarte_entry.dart';
 import 'package:logarte/src/models/navigation_action.dart';
+import 'package:logarte/src/persistence/logarte_persistence.dart';
 
 class Logarte {
   final String? password;
@@ -23,7 +24,9 @@ class Logarte {
   final bool disableDatabaseLogs;
   final bool disableNetworkLogs;
   final bool disablePlainLogs;
+  final bool disableNotificationLogs;
   final bool showBackButton;
+  final LogartePersistence? persistence;
 
   Logarte({
     this.password,
@@ -39,15 +42,34 @@ class Logarte {
     this.disableDatabaseLogs = false,
     this.disableNetworkLogs = false,
     this.disablePlainLogs = false,
+    this.disableNotificationLogs = false,
     this.showBackButton = true,
+    this.persistence,
   });
 
   final logs = ValueNotifier(<LogarteEntry>[]);
+
+  Future<void> init() async {
+    if (persistence == null) return;
+    await persistence!.init();
+    final persisted = await persistence!.loadAll();
+    if (persisted.isNotEmpty) {
+      logs.value = [...persisted];
+    }
+  }
+
   void _add(LogarteEntry entry) {
     if (logs.value.length > logBufferLength) {
       logs.value.removeAt(0);
     }
     logs.value = [...logs.value, entry];
+
+    persistence?.write(entry).catchError((_) {});
+  }
+
+  Future<void> clearLogs() async {
+    logs.value = [];
+    await persistence?.clear();
   }
 
   @Deprecated('Use logarte.log() instead')
@@ -164,19 +186,24 @@ class Logarte {
         return;
       }
 
-      // TODO: make it common logic
+      final rName = route?.settings.name;
+      final pName = previousRoute?.settings.name;
+
       final message = previousRoute != null
           ? action == NavigationAction.pop
-              ? '$action from "${route.routeName}" to "${previousRoute.routeName}"'
-              : '$action to "${route.routeName}"'
-          : '$action to "${route.routeName}"';
+              ? '$action from "$rName" to "$pName"'
+              : '$action to "$rName"'
+          : '$action to "$rName"';
 
       _log(message, write: false);
 
       _add(
         NavigatorLogarteEntry(
-          route: route,
-          previousRoute: previousRoute,
+          routeName: rName,
+          routeArguments: route?.settings.arguments?.toString(),
+          previousRouteName: pName,
+          previousRouteArguments:
+              previousRoute?.settings.arguments?.toString(),
           action: action,
         ),
       );
@@ -198,6 +225,35 @@ class Logarte {
         DatabaseLogarteEntry(
           target: target,
           value: value,
+          source: source,
+        ),
+      );
+    } catch (_) {}
+  }
+
+  void notification({
+    required NotificationEventType eventType,
+    String? messageId,
+    String? title,
+    String? body,
+    String? topic,
+    Map<String, dynamic>? data,
+    String? source,
+  }) {
+    try {
+      _log(
+        '[${eventType.name}] ${title ?? topic ?? eventType.name}',
+        write: false,
+      );
+
+      _add(
+        NotificationLogarteEntry(
+          eventType: eventType,
+          messageId: messageId,
+          title: title,
+          body: body,
+          topic: topic,
+          data: data,
           source: source,
         ),
       );

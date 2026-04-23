@@ -6,7 +6,6 @@ import 'package:share_plus/share_plus.dart';
 final Logarte logarte = Logarte(
   onShare: Share.share,
   password: '1234',
-  customTab: const MyCustomTab(),
   onRocketDoubleTapped: (context) {
     showDialog(
       context: context,
@@ -37,6 +36,10 @@ final Logarte logarte = Logarte(
       },
     );
   },
+  disableAllLogs: true,
+  disableNavigationLogs: true,
+  disableDatabaseLogs: true,
+  disablePlainLogs: true,
 );
 
 enum Environment { dev, prod }

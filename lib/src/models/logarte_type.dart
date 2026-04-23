@@ -3,4 +3,5 @@ enum LogarteType {
   network,
   database,
   navigation,
+  notification,
 }

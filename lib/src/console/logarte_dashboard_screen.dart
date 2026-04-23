@@ -23,7 +23,7 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
   void initState() {
     super.initState();
     _controller = TextEditingController();
-    tabLength = widget.instance.customTab != null ? 6 : 5;
+    tabLength = widget.instance.customTab != null ? 7 : 6;
     if (widget.instance.disableAllLogs) {
       tabLength--;
     }
@@ -37,6 +37,9 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
       tabLength--;
     }
     if (widget.instance.disableNavigationLogs) {
+      tabLength--;
+    }
+    if (widget.instance.disableNotificationLogs) {
       tabLength--;
     }
   }
@@ -114,6 +117,12 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
                           text:
                               'Navigation (${widget.instance.logs.value.whereType<NavigatorLogarteEntry>().length})',
                         ),
+                      if (!widget.instance.disableNotificationLogs)
+                        Tab(
+                          icon: const Icon(Icons.notifications_rounded),
+                          text:
+                              'Notifications (${widget.instance.logs.value.whereType<NotificationLogarteEntry>().length})',
+                        ),
                       if (widget.instance.customTab != null)
                         const Tab(
                           icon: Icon(Icons.extension_rounded),
@@ -157,6 +166,11 @@ class _LogarteDashboardScreenState extends State<LogarteDashboardScreen> {
                           ),
                         if (!widget.instance.disableNavigationLogs)
                           _List<NavigatorLogarteEntry>(
+                            instance: widget.instance,
+                            search: search,
+                          ),
+                        if (!widget.instance.disableNotificationLogs)
+                          _List<NotificationLogarteEntry>(
                             instance: widget.instance,
                             search: search,
                           ),

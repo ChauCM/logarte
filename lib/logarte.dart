@@ -6,3 +6,5 @@ export 'src/channels/logarte_navigator_observer.dart';
 export 'src/channels/logarte_dio_interceptor.dart';
 export 'src/console/logarte_magical_tap.dart';
 export 'src/console/logarte_dashboard_screen.dart';
+export 'src/persistence/logarte_persistence.dart';
+export 'src/persistence/file_logarte_persistence.dart';
